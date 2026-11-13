@@ -1,4 +1,4 @@
-# Contribuir a ControlMin
+# Contribuir a TimeControl
 
 Gracias por ayudar a mejorar una herramienta gratuita para el fútbol base.
 

@@ -1,1 +1,10 @@
-{"name":"controlmin","version":"0.1.0","private":true,"type":"module","scripts":{"test":"node --test tests/*.test.js","dev":"python3 -m http.server 4173 --directory dist"}}
+{
+  "name": "timecontrol",
+  "version": "0.2.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests/*.test.js",
+    "dev": "python3 -m http.server 4173 --directory dist"
+  }
+}

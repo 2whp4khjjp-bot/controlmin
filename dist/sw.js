@@ -1,4 +1,4 @@
-const CACHE='controlmin-shell-v1';
+const CACHE='controlmin-shell-v2-timecontrol';
 const FILES=['./','./index.html','./app.js','./engine.js','./style.css','./icon.svg','./manifest.webmanifest'];
 self.addEventListener('install',event=>{event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(FILES)));});
 self.addEventListener('activate',event=>{event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('controlmin-shell-')&&k!==CACHE).map(k=>caches.delete(k)))));});

@@ -1,10 +1,12 @@
-# ControlMin · por rkoud
+# TimeControl · por rkoud
 
 [![Pruebas y publicación](https://github.com/2whp4khjjp-bot/controlmin/actions/workflows/pages.yml/badge.svg)](https://github.com/2whp4khjjp-bot/controlmin/actions/workflows/pages.yml)
 
 **[Abrir la aplicación](https://2whp4khjjp-bot.github.io/controlmin/)** · [Reportar un problema](https://github.com/2whp4khjjp-bot/controlmin/issues)
 
 Código abierto bajo la licencia MIT.
+
+Antes se llamaba ControlMin. El repositorio y la dirección de GitHub se mantienen para conservar enlaces y datos. Las copias antiguas de ControlMin siguen siendo compatibles.
 
 Aplicación gratuita de control de minutos de fútbol, diseñada para analizar partidos en VEO abierto en otra ventana. Sin registro ni servidor de datos: las fichas, equipos y partidos se guardan en el navegador.
 
@@ -51,7 +53,7 @@ Las fichas de los partidos son instantáneas: nombre y dorsal históricos se con
 
 ## Datos y seguridad de las copias
 
-Los datos se guardan en `localStorage` bajo `controlmin.v1`, vinculados al navegador y al origen web. Una instalación en otra dirección no comparte el almacenamiento. Para trasladarse a rkoud.com, exporta e importa una copia.
+Por compatibilidad, los datos se guardan en `localStorage` bajo `controlmin.v1`, vinculados al navegador y al origen web. Una instalación en otra dirección no comparte el almacenamiento. Para trasladarse a rkoud.com, exporta e importa una copia.
 
 Las copias JSON contienen nombres y estadísticas: compártelas solo con quien corresponda. Al importar se muestra fecha y ámbito, se solicita confirmar la sustitución y se conserva una copia local previa en `controlmin.recovery`. En copias de equipo/partido, los demás ámbitos permanecen; las fichas globales compartidas se actualizan con los datos importados.
 
@@ -79,7 +81,7 @@ GitHub Pages debe estar configurado con origen **GitHub Actions**. La integraci�
 
 ## Pendientes antes de lanzamiento público
 
-- Añadir el acceso desde rkoud.com.
+- Conectar `timecontrol.rkoud.com` y añadir el acceso desde rkoud.com. Consulta [la configuración preparada](docs/DOMINIO.md).
 - Validar la experiencia con usuarios reales antes de difundirla.
 - Grabar los vídeos de guía con el flujo validado.
 - Modo en vivo: esta versión se centra en análisis de vídeo con tiempos manuales.

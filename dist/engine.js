@@ -60,7 +60,7 @@ export function stateAt(m,period,time,excludeId){
  const r=replay(copy);return r.states[period];
 }
 export function validateDB(db){
- if(!db||db.version!==1||!Array.isArray(db.players)||!Array.isArray(db.teams)||!Array.isArray(db.matches))throw Error('La copia no tiene un formato ControlMin válido.');
+ if(!db||db.version!==1||!Array.isArray(db.players)||!Array.isArray(db.teams)||!Array.isArray(db.matches))throw Error('La copia no tiene un formato TimeControl válido.');
  for(const list of [db.players,db.teams,db.matches])if(new Set(list.map(v=>v.id)).size!==list.length)throw Error('La copia contiene identificadores duplicados.');
  const pids=new Set(db.players.map(p=>p.id)),tids=new Set(db.teams.map(t=>t.id));
  for(const p of db.players)if(!validId(p.id)||typeof p.name!=='string'||!p.name.trim())throw Error('Ficha de jugador no válida.');
@@ -73,10 +73,10 @@ export function backup(db,scope,id){
  if(scope==='team'){result.teams=result.teams.filter(t=>t.id===id);result.matches=result.matches.filter(m=>m.teamId===id);}
  if(scope==='match'){result.matches=result.matches.filter(m=>m.id===id);result.teams=result.teams.filter(t=>result.matches.some(m=>m.teamId===t.id));result.teams.forEach(t=>t.members=t.members.filter(p=>result.matches.some(m=>m.roster.some(r=>r.id===p.playerId))));}
  if(scope!=='all'){const used=new Set([...result.teams.flatMap(t=>t.members.map(p=>p.playerId)),...result.matches.flatMap(m=>m.roster.map(p=>p.id))]);result.players=result.players.filter(p=>used.has(p.id));}
- return{app:'ControlMin',version:1,scope,id:id||null,exportedAt:new Date().toISOString(),data:result};
+ return{app:'TimeControl',version:1,scope,id:id||null,exportedAt:new Date().toISOString(),data:result};
 }
 export function importBackup(current,packet){
- if(packet.app!=='ControlMin'||packet.version!==1||!['all','team','match'].includes(packet.scope))throw Error('No es una copia compatible de ControlMin.');
+ if(!['TimeControl','ControlMin'].includes(packet.app)||packet.version!==1||!['all','team','match'].includes(packet.scope))throw Error('No es una copia compatible de TimeControl.');
  const incoming=validateDB(packet.data);
  if(packet.scope==='all')return structuredClone(incoming);
  if(!packet.id)throw Error('La copia no identifica el ámbito.');

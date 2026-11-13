@@ -10,6 +10,7 @@ with sync_playwright() as p:
  page=ctx.new_page();errors=[];page.on('pageerror',lambda e:errors.append(str(e)))
  page.goto(URL);page.get_by_role('button',name='Explorar con datos ficticios').click()
  expect(page.locator('h1')).to_have_text('Análisis del partido')
+ expect(page).to_have_title('TimeControl · por rkoud')
  data=lambda:page.evaluate("JSON.parse(localStorage.getItem('controlmin.v1'))")
  original=data();mid=original['matches'][0]['id']
  # Reload does not reset starter intervals or events.
@@ -50,7 +51,7 @@ with sync_playwright() as p:
  # Export all, import same scope and no duplicates.
  page.locator('.nav[data-view="settings"]').click();page.get_by_role('button',name='Exportar copia',exact=True).click()
  with page.expect_download() as dl:page.get_by_role('button',name='Descargar JSON',exact=True).click()
- f=dl.value.path();packet=json.load(open(f));assert len(packet['data']['teams'])==2
+ f=dl.value.path();packet=json.load(open(f));assert packet['app']=='TimeControl';assert len(packet['data']['teams'])==2
  page.get_by_role('button',name='Cerrar',exact=True).click()
  page.locator('#import-file').set_input_files(f)
  expect(page.locator('dialog')).to_be_visible();page.locator('#confirm-action').click()
