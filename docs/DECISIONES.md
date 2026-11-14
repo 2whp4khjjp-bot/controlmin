@@ -18,3 +18,5 @@
 15. El informe y el nombre del archivo de liga empiezan por el número de jornada.
 16. Las columnas ordenan de forma ascendente o descendente. PDF, PNG y CSV respetan el orden visible.
 17. PDF A4 vertical para imprimir e imagen PNG vertical de una sola pieza para móvil.
+
+18. Exportación móvil con proporción exacta 9:16 por página: portada oscura, resumen y contenido paginado legible, inspirado en el diseño de referencia del usuario. PDF directo y páginas PNG en ZIP; no incluye datos del documento privado de referencia.

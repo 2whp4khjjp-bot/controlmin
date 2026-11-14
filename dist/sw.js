@@ -1,5 +1,5 @@
-const CACHE='controlmin-shell-v4-matchreports';
-const FILES=['./','./index.html','./app.js','./engine.js','./presentation.js','./report-image.js','./style.css','./icon.svg','./manifest.webmanifest','./icons/icon-192.png','./icons/icon-512.png','./icons/maskable-512.png','./icons/apple-touch-icon.png','./icons/favicon.ico'];
+const CACHE='controlmin-shell-v5-mobile916';
+const FILES=['./','./index.html','./app.js','./engine.js','./presentation.js','./report-image.js','./mobile-report.js','./style.css','./icon.svg','./manifest.webmanifest','./icons/icon-192.png','./icons/icon-512.png','./icons/maskable-512.png','./icons/apple-touch-icon.png','./icons/favicon.ico'];
 self.addEventListener('install',event=>{event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(FILES)));});
 self.addEventListener('activate',event=>{event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('controlmin-shell-')&&k!==CACHE).map(k=>caches.delete(k)))));});
 self.addEventListener('fetch',event=>{

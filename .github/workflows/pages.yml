@@ -24,6 +24,7 @@ jobs:
           node --check dist/engine.js
           node --check dist/presentation.js
           node --check dist/report-image.js
+          node --check dist/mobile-report.js
           node --check dist/sw.js
           npm test
       - uses: actions/setup-python@v5

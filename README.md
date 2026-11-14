@@ -35,7 +35,9 @@ Abre http://localhost:4173. También puedes ejecutar `npm run dev`. No requiere 
 - Corrección y borrado cronológicos con validación de eventos posteriores.
 - Cálculo exacto en segundos, redondeo independiente de partes y total al minuto más cercano.
 - Porcentaje con duración real, añadido incluido y descanso excluido.
-- Informe PDF A4 vertical con tarjetas por jugador, imagen PNG vertical para móvil, CSV y texto. Todos mantienen el orden seleccionado en las columnas.
+- PDF móvil 9:16 descargable: portada oscura, resumen y páginas claras con cinco jugadores por página (seis en acumulados).
+- Imágenes de cada página a 1080×1920 en ZIP; imagen continua PNG e impresión A4 vertical como alternativas.
+- PDF, PNG, CSV y texto mantienen el orden elegido en las columnas.
 - Los títulos y nombres de archivo de liga empiezan por la jornada (ejemplo: `08-Jornada-8-Liga-…`).
 - Ordenación ascendente/descendente por dorsal, nombre, parte, total y porcentaje; también en los acumulados de jugadores.
 - Historial del jugador en todos los equipos, con filtro por equipo. Acumulados de partidos finalizados.

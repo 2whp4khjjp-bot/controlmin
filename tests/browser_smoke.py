@@ -68,14 +68,30 @@ with sync_playwright() as p:
  csvrows=list(csv.reader(open(dl.value.path(),encoding='utf-8-sig'),delimiter=';'))
  assert csvrows[1][1]==first
  assert csvrows[1][-5:]==['Liga','12','Fuera','3','1']
- with page.expect_download() as image_dl:page.get_by_role('button',name='Imagen vertical para móvil (PNG)',exact=True).click()
+ # Mobile PDF: every page is exactly 9:16, with a cover, summary and paginated players.
+ with page.expect_download() as pdf_dl:page.get_by_role('button',name='PDF móvil 9:16',exact=True).click()
+ pdfdata=Path(pdf_dl.value.path()).read_bytes();assert pdf_dl.value.suggested_filename.startswith('12-')
+ assert pdfdata.startswith(b'%PDF-1.4') and pdfdata.count(b'/MediaBox [0 0 306 544]')==5
+ (OUT/'12-informe-movil-9x16.pdf').write_bytes(pdfdata)
+ # PNG pages use the same 9:16 layout and are packaged as a valid ZIP.
+ with page.expect_download() as zip_dl:page.get_by_role('button',name='Imágenes 9:16 (ZIP)',exact=True).click()
+ import zipfile,struct
+ with zipfile.ZipFile(zip_dl.value.path()) as z:
+  assert z.testzip() is None and len(z.namelist())==5
+  for name in z.namelist():
+   raw=z.read(name);assert struct.unpack('>II',raw[16:24])==(1080,1920)
+  (OUT/'portada-9x16.png').write_bytes(z.read(z.namelist()[0]))
+  (OUT/'jugadores-9x16.png').write_bytes(z.read(z.namelist()[2]))
+ (OUT/'12-informe-9x16.zip').write_bytes(Path(zip_dl.value.path()).read_bytes())
+
+ with page.expect_download() as image_dl:page.get_by_role('button',name='Imagen continua (PNG)',exact=True).click()
  assert image_dl.value.suggested_filename.startswith('12-')
  import struct
  png=Path(image_dl.value.path()).read_bytes();width,height=struct.unpack('>II',png[16:24]);assert width==1080 and height>width
  (OUT/'12-informe-movil.png').write_bytes(png)
  # Check that the browser print action supplies a journey-prefixed PDF title.
  page.evaluate('window.print=()=>{window.__printTitle=document.title}')
- page.get_by_role('button',name='PDF vertical · imprimir o guardar',exact=True).click()
+ page.get_by_role('button',name='Imprimir en A4 vertical',exact=True).click()
  assert page.evaluate('window.__printTitle').startswith('12 - Jornada 12')
  page.pdf(path=str(OUT/'12-informe-vertical.pdf'),prefer_css_page_size=True,print_background=True)
  page.emulate_media(media='print')
