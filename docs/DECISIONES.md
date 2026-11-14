@@ -13,3 +13,8 @@
 11. Aplicación local en el dispositivo, sin cuentas. Correo con archivo descargable y adjunto manual; compartir nativo cuando esté disponible.
 12. Vídeo en VEO separado; integración de vídeo aplazada.
 13. Entrada futura desde rkoud.com; código en GitHub y guías en vídeo antes de difusión pública.
+
+14. Liga o amistoso, jornada de liga, casa/fuera y resultado. El marcador presenta primero al local.
+15. El informe y el nombre del archivo de liga empiezan por el número de jornada.
+16. Las columnas ordenan de forma ascendente o descendente. PDF, PNG y CSV respetan el orden visible.
+17. PDF A4 vertical para imprimir e imagen PNG vertical de una sola pieza para móvil.

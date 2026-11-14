@@ -1,3 +1,4 @@
+import {validateDetails} from './presentation.js';
 // Pure match engine. Seconds and immutable events are the source of truth.
 export const uid=()=>globalThis.crypto.randomUUID();
 export function parseTime(value){
@@ -9,6 +10,7 @@ export const clock=s=>`${Math.floor(s/60).toString().padStart(2,'0')}:${Math.flo
 export const mins=s=>Math.round(s/60);
 const validId=id=>typeof id==='string'&&/^[A-Za-z0-9_-]{1,100}$/.test(id);
 export function validateMatch(m){
+ validateDetails(m);
  if(!validId(m.id)||!validId(m.teamId)||typeof m.opponent!=='string'||!m.opponent.trim())throw Error('Introduce un rival.');
  if(![1,2].includes(m.periods.length))throw Error('El partido debe tener una o dos partes.');
  if(![7,11].includes(m.format))throw Error('Modalidad no válida.');

@@ -40,14 +40,61 @@ with sync_playwright() as p:
  # Final report + print PDF.
  page.get_by_role('button',name='Finalizar partido',exact=True).click()
  page.locator('#confirm-action').click()
- expect(page.locator('h1')).to_have_text('Informe del partido')
+ expect(page.locator('h1')).to_contain_text('08 - Jornada 8 - Liga')
  page.screenshot(path=str(OUT/'report.png'),full_page=True)
- page.pdf(path=str(OUT/'informe-generado.pdf'),landscape=True,format='A4',print_background=True)
+ page.pdf(path=str(OUT/'informe-generado.pdf'),prefer_css_page_size=True,print_background=True)
  assert data()['matches'][0]['finished'] is True
+ # Metadata edits are allowed after finalizing and reflect home/away score order.
+ page.get_by_role('button',name='Volver al partido',exact=True).click()
+ expect(page.locator('.pitch')).to_be_visible()
+ page.screenshot(path=str(OUT/'campo.png'),full_page=True)
+ page.get_by_role('button',name='Datos del partido',exact=True).click()
+ page.locator('dialog [name="round"]').fill('12')
+ page.locator('dialog [name="venue"]').select_option('away')
+ page.locator('dialog [name="goalsFor"]').fill('3')
+ page.locator('dialog [name="goalsAgainst"]').fill('1')
+ page.get_by_role('button',name='Guardar',exact=True).click()
+ page.get_by_role('button',name='Informe',exact=True).click()
+ expect(page.locator('h1')).to_contain_text('12 - Jornada 12 - Liga - UD Central 1-3 CD Norte')
+ # Descending sort is used by CSV, printable player cards and persisted after reload.
+ page.locator('[data-action="sort-report"][data-key="total"]').click()
+ page.locator('[data-action="sort-report"][data-key="total"]').click()
+ first=page.locator('.screen-table tbody tr').first.locator('.person').inner_text()
+ assert page.locator('.print-player').first.inner_text().find(first)>=0
+ page.get_by_role('button',name='Exportar informe',exact=True).click()
+ with page.expect_download() as dl:page.get_by_role('button',name='CSV para Excel',exact=True).click()
+ assert dl.value.suggested_filename.startswith('12-')
+ import csv
+ csvrows=list(csv.reader(open(dl.value.path(),encoding='utf-8-sig'),delimiter=';'))
+ assert csvrows[1][1]==first
+ assert csvrows[1][-5:]==['Liga','12','Fuera','3','1']
+ with page.expect_download() as image_dl:page.get_by_role('button',name='Imagen vertical para móvil (PNG)',exact=True).click()
+ assert image_dl.value.suggested_filename.startswith('12-')
+ import struct
+ png=Path(image_dl.value.path()).read_bytes();width,height=struct.unpack('>II',png[16:24]);assert width==1080 and height>width
+ (OUT/'12-informe-movil.png').write_bytes(png)
+ # Check that the browser print action supplies a journey-prefixed PDF title.
+ page.evaluate('window.print=()=>{window.__printTitle=document.title}')
+ page.get_by_role('button',name='PDF vertical · imprimir o guardar',exact=True).click()
+ assert page.evaluate('window.__printTitle').startswith('12 - Jornada 12')
+ page.pdf(path=str(OUT/'12-informe-vertical.pdf'),prefer_css_page_size=True,print_background=True)
+ page.emulate_media(media='print')
+ assert page.locator('.screen-table').is_hidden() and page.locator('.print-roster').is_visible()
+ page.screenshot(path=str(OUT/'impresion-vertical.png'),full_page=True)
+ page.emulate_media(media='screen')
+ assert data()['matches'][0]['reportSort']=={'key':'total','direction':'desc'}
  # Identity across teams and accumulated stats.
- page.locator('.nav[data-view="players"]').click();page.get_by_role('button',name='Ver ficha').first.click()
+ page.locator('.nav[data-view="players"]').click();page.locator('tbody tr').filter(has_text='Hugo M.').get_by_role('button',name='Ver ficha').click()
  expect(page.locator('h1')).to_have_text('Hugo M.')
  expect(page.locator('#profile-team')).to_have_value('')
+ # Aggregate column sorting and CSV use the same order.
+ page.locator('.nav[data-view="players"]').click()
+ page.locator('[data-action="sort-players"][data-key="total"]').click()
+ page.locator('[data-action="sort-players"][data-key="total"]').click()
+ first=page.locator('.totals-table tbody tr').first.locator('.namecell strong').inner_text()
+ with page.expect_download() as dl:page.get_by_role('button',name='CSV',exact=True).click()
+ csvrows=list(csv.reader(open(dl.value.path(),encoding='utf-8-sig'),delimiter=';'))
+ assert csvrows[1][0]==first
  # Export all, import same scope and no duplicates.
  page.locator('.nav[data-view="settings"]').click();page.get_by_role('button',name='Exportar copia',exact=True).click()
  with page.expect_download() as dl:page.get_by_role('button',name='Descargar JSON',exact=True).click()
@@ -56,6 +103,18 @@ with sync_playwright() as p:
  page.locator('#import-file').set_input_files(f)
  expect(page.locator('dialog')).to_be_visible();page.locator('#confirm-action').click()
  assert len(data()['teams'])==2 and len(data()['players'])==12 and len(data()['matches'])==1
+ # Legacy match files remain readable with unknown metadata (no invented results).
+ legacy=json.loads(json.dumps(packet))
+ for match in legacy['data']['matches']:
+  for key in ['competition','round','venue','score']:match.pop(key,None)
+ legacy['app']='ControlMin'
+ legacy_file=OUT/'legacy.json';legacy_file.write_text(json.dumps(legacy))
+ page.locator('#import-file').set_input_files(str(legacy_file))
+ page.locator('#confirm-action').click()
+ page.get_by_role('button',name='Revisar',exact=True).click()
+ expect(page.locator('.heading')).to_contain_text('Tipo sin indicar')
+ expect(page.locator('.heading')).to_contain_text('Ubicación sin indicar')
+
  # Existing player links to another team without duplicate identity.
  page.locator('#team-select').select_option(data()['teams'][1]['id'])
  page.locator('.nav[data-view="roster"]').click();page.get_by_role('button',name='Añadir jugador',exact=True).click()
@@ -65,6 +124,7 @@ with sync_playwright() as p:
  # Prepare a one-half tournament with exactly seven starters.
  page.get_by_role('button',name='Preparar partido',exact=True).click()
  page.locator('[name="opponent"]').fill('Rival torneo')
+ page.locator('[name="round"]').fill('9')
  page.locator('[name="periodCount"]').select_option('1')
  for checkbox in page.locator('[data-draft="starter"]').all()[:7]:checkbox.check()
  page.locator('[name="end0"]').fill('20:30')
@@ -87,6 +147,20 @@ with sync_playwright() as p:
  page.set_viewport_size({'width':390,'height':844});page.locator('.nav[data-view="roster"]').click()
  page.screenshot(path=str(OUT/'mobile.png'),full_page=True)
  assert page.evaluate('document.documentElement.scrollWidth <= window.innerWidth')
+ # Friendly matches have no league round; a goalless draw is a recorded result.
+ page.locator('.nav[data-view="matches"]').click()
+ page.get_by_role('button',name='Preparar partido',exact=True).click()
+ page.locator('[name="opponent"]').fill('Amistoso de prueba')
+ page.locator('[name="competition"]').select_option('friendly')
+ assert page.locator('[name="round"]').count()==0
+ page.locator('[name="venue"]').select_option('away')
+ page.locator('[name="goalsFor"]').fill('0');page.locator('[name="goalsAgainst"]').fill('0')
+ for checkbox in page.locator('[data-draft="starter"]').all()[:7]:checkbox.check()
+ page.get_by_role('button',name='Comenzar análisis',exact=True).click()
+ expect(page.locator('.heading')).to_contain_text('Amistoso')
+ assert data()['matches'][-1]['round'] is None
+ assert data()['matches'][-1]['score']=={'for':0,'against':0}
+ assert data()['matches'][-1]['venue']=='away'
  assert not errors,errors
  print('PASS: reload, correction, red card, injury, report PDF, identity, export/import, tournament, multi-change, reentry, mobile; no JS errors.')
  browser.close()

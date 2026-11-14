@@ -28,12 +28,16 @@ Abre http://localhost:4173. También puedes ejecutar `npm run dev`. No requiere 
 - Dorsal por equipo y por partido; posiciones opcionales.
 - Convocatoria y titulares independientes de la plantilla.
 - Fútbol 7 / 11 y partidos de una o dos partes, con tiempos reales de cámara.
+- Campo minimalista detrás de los jugadores en juego.
+- Liga o amistoso, jornada, casa/fuera y resultado editable; orden local/visitante en marcador e informe.
 - Cambios múltiples, reentradas, cambios de descanso y continuidad automática entre partes.
 - Botones independientes para expulsión y lesión sin cambio: salidas definitivas.
 - Corrección y borrado cronológicos con validación de eventos posteriores.
 - Cálculo exacto en segundos, redondeo independiente de partes y total al minuto más cercano.
 - Porcentaje con duración real, añadido incluido y descanso excluido.
-- Informe imprimible/PDF con intervalos por jugador y minutos por parte en la misma fila; CSV y texto.
+- Informe PDF A4 vertical con tarjetas por jugador, imagen PNG vertical para móvil, CSV y texto. Todos mantienen el orden seleccionado en las columnas.
+- Los títulos y nombres de archivo de liga empiezan por la jornada (ejemplo: `08-Jornada-8-Liga-…`).
+- Ordenación ascendente/descendente por dorsal, nombre, parte, total y porcentaje; también en los acumulados de jugadores.
 - Historial del jugador en todos los equipos, con filtro por equipo. Acumulados de partidos finalizados.
 - Copias JSON: todos los equipos, un equipo o un partido; importación que sustituye el ámbito sin duplicar identidades.
 - Descarga y apertura de correo (adjunto manual), o compartir archivo cuando el navegador lo admite.
@@ -50,6 +54,8 @@ El informe durante el análisis es provisional: un intervalo abierto llega al fi
 La escala del informe indica tiempo de juego dentro de cada parte. Los cambios se introducen con tiempos de cámara y se muestran como intervalos reales relativos al inicio de cada parte.
 
 Las fichas de los partidos son instantáneas: nombre y dorsal históricos se conservan al editar una plantilla. La ficha única enlaza el historial por ID, no por nombre.
+
+Los encuentros antiguos conservan sus datos. Los campos nuevos aparecen sin indicar hasta completarlos desde «Datos del partido». Un resultado vacío no equivale a 0–0.
 
 ## Datos y seguridad de las copias
 
