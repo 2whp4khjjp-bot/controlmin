@@ -59,7 +59,7 @@ with sync_playwright() as p:
  page.get_by_role('button',name='Finalizar partido',exact=True).click();page.locator('#confirm-action').click()
  expect(page.locator('.tactical-report')).to_contain_text('Formación inicial')
  expect(page.locator('.tactical-report')).to_contain_text('Cambio de formación')
- expect(page.locator('.tactical-report')).to_contain_text('Petición del árbitro')
+ expect(page.locator('.tactical-report')).to_contain_text('petición del árbitro')
  expect(page.locator('.tactical-report')).to_contain_text('Cámara 05:10 · Juego 01:50')
  page.get_by_role('button',name='Exportar informe',exact=True).click()
  with page.expect_download() as dl:page.get_by_role('button',name='PDF móvil 9:16',exact=True).click()
