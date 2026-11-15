@@ -4,6 +4,10 @@ from pathlib import Path
 OUT=Path(os.environ.get("CONTROLMIN_TEST_OUTPUT",str(Path(__file__).resolve().parents[1]/"test-results")))
 OUT.mkdir(parents=True,exist_ok=True)
 URL=os.environ.get('CONTROLMIN_TEST_URL','http://127.0.0.1:4173')
+def set_time(page,ident,value):
+ minutes,seconds=value.split(':')
+ page.locator(f'[data-clock="{ident}"] .clock-min').fill(minutes)
+ page.locator(f'[data-clock="{ident}"] .clock-sec').fill(seconds)
 with sync_playwright() as p:
  browser=p.chromium.launch(headless=True,executable_path=os.environ.get('CHROMIUM_PATH') or shutil.which('chromium') or p.chromium.executable_path,args=['--no-sandbox'])
  ctx=browser.new_context(viewport={'width':1440,'height':1050})
@@ -18,7 +22,7 @@ with sync_playwright() as p:
  assert data()['matches']==original['matches']
  # Edit an earlier change (independent of later events).
  page.get_by_role('button',name='Editar evento 13:20',exact=True).click()
- page.locator('#event-time').fill('14:10');page.locator('#event-time').press('Tab')
+ set_time(page,'event-time','14:10')
  # Change time reset selections; reselect the event players.
  page.locator('[data-side="out"]').filter(has_text='Dani L.').click()
  page.locator('[data-side="in"]').filter(has_text='Álex C.').click()
@@ -28,7 +32,7 @@ with sync_playwright() as p:
  saved=data();page.reload();assert data()==saved
  page.get_by_role('button',name='Continuar').click()
  # Expulsion and injury after all historical events, each without replacement.
- page.locator('#event-time').fill('62:00');page.locator('#event-time').press('Tab')
+ set_time(page,'event-time','62:00')
  page.get_by_role('button',name='Expulsión',exact=True).click()
  page.locator('[data-side="out"]').filter(has_text='Hugo M.').click()
  page.get_by_role('button',name='Confirmar salida').click()
@@ -67,17 +71,17 @@ with sync_playwright() as p:
  import csv
  csvrows=list(csv.reader(open(dl.value.path(),encoding='utf-8-sig'),delimiter=';'))
  assert csvrows[1][1]==first
- assert csvrows[1][-5:]==['Liga','12','Fuera','3','1']
+ assert [csvrows[1][csvrows[0].index(key)] for key in ['Competicion','Jornada','Ubicacion','Goles_equipo','Goles_rival']]==['Liga','12','Fuera','3','1']
  # Mobile PDF: every page is exactly 9:16, with a cover, summary and paginated players.
  with page.expect_download() as pdf_dl:page.get_by_role('button',name='PDF móvil 9:16',exact=True).click()
  pdfdata=Path(pdf_dl.value.path()).read_bytes();assert pdf_dl.value.suggested_filename.startswith('12-')
- assert pdfdata.startswith(b'%PDF-1.4') and pdfdata.count(b'/MediaBox [0 0 306 544]')==5
+ assert pdfdata.startswith(b'%PDF-1.4') and pdfdata.count(b'/MediaBox [0 0 306 544]')==6
  (OUT/'12-informe-movil-9x16.pdf').write_bytes(pdfdata)
  # PNG pages use the same 9:16 layout and are packaged as a valid ZIP.
  with page.expect_download() as zip_dl:page.get_by_role('button',name='Imágenes 9:16 (ZIP)',exact=True).click()
  import zipfile,struct
  with zipfile.ZipFile(zip_dl.value.path()) as z:
-  assert z.testzip() is None and len(z.namelist())==5
+  assert z.testzip() is None and len(z.namelist())==6
   for name in z.namelist():
    raw=z.read(name);assert struct.unpack('>II',raw[16:24])==(1080,1920)
   (OUT/'portada-9x16.png').write_bytes(z.read(z.namelist()[0]))
@@ -122,7 +126,7 @@ with sync_playwright() as p:
  # Legacy match files remain readable with unknown metadata (no invented results).
  legacy=json.loads(json.dumps(packet))
  for match in legacy['data']['matches']:
-  for key in ['competition','round','venue','score']:match.pop(key,None)
+  for key in ['competition','round','venue','score','initialFormation','initialPositions']:match.pop(key,None)
  legacy['app']='ControlMin'
  legacy_file=OUT/'legacy.json';legacy_file.write_text(json.dumps(legacy))
  page.locator('#import-file').set_input_files(str(legacy_file))
@@ -143,18 +147,18 @@ with sync_playwright() as p:
  page.locator('[name="round"]').fill('9')
  page.locator('[name="periodCount"]').select_option('1')
  for checkbox in page.locator('[data-draft="starter"]').all()[:7]:checkbox.check()
- page.locator('[name="end0"]').fill('20:30')
+ set_time(page,'setup-end-0','20:30')
  page.get_by_role('button',name='Comenzar análisis',exact=True).click()
  expect(page.locator('h1')).to_have_text('Análisis del partido')
  assert len(data()['matches'][-1]['periods'])==1
  # Simultaneous replacements and return.
- page.locator('#event-time').fill('05:30');page.locator('#event-time').press('Tab')
+ set_time(page,'event-time','05:30')
  ids=[x['id'] for x in data()['matches'][-1]['roster']]
  for pid in ids[:2]:page.locator(f'[data-side="out"][data-id="{pid}"]').click()
  for pid in ids[7:9]:page.locator(f'[data-side="in"][data-id="{pid}"]').click()
  page.get_by_role('button',name='Confirmar cambio',exact=True).click()
  assert len(data()['matches'][-1]['events'][0]['out'])==2
- page.locator('#event-time').fill('10:00');page.locator('#event-time').press('Tab')
+ set_time(page,'event-time','10:00')
  page.locator(f'[data-side="out"][data-id="{ids[7]}"]').click()
  page.locator(f'[data-side="in"][data-id="{ids[0]}"]').click()
  page.get_by_role('button',name='Confirmar cambio',exact=True).click()

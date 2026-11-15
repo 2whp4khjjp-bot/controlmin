@@ -28,7 +28,10 @@ Abre http://localhost:4173. También puedes ejecutar `npm run dev`. No requiere 
 - Dorsal por equipo y por partido; posiciones opcionales.
 - Convocatoria y titulares independientes de la plantilla.
 - Fútbol 7 / 11 y partidos de una o dos partes, con tiempos reales de cámara.
-- Campo minimalista detrás de los jugadores en juego.
+- Campo con jugadores colocados por formación inicial (fútbol 7 y fútbol 11), sistemas personalizados y portero.
+- Cambios de formación e intercambios de posiciones por pulsación, con tiempo de cámara y constancia en el informe.
+- Cambio a petición del árbitro: sustitución temporal que permite el regreso manual del niño.
+- Entrada de minutos y segundos con dos puntos fijos y avance automático; el botón «100+» permite introducir tiempos largos.
 - Liga o amistoso, jornada, casa/fuera y resultado editable; orden local/visitante en marcador e informe.
 - Cambios múltiples, reentradas, cambios de descanso y continuidad automática entre partes.
 - Botones independientes para expulsión y lesión sin cambio: salidas definitivas.
@@ -76,7 +79,7 @@ npm test
 Instala las dependencias de pruebas con `python3 -m pip install -r requirements-test.txt` y `python3 -m playwright install chromium`. Con el servidor en 4173:
 
 ```sh
-python3 tests/browser_smoke.py
+python3 tests/run_browser.py
 ```
 
 Incluye recarga, corrección, salidas definitivas, PDF, fichas compartidas, exportación/importación, torneo de una parte, cambios múltiples, reentrada y móvil. El script detecta Chromium o utiliza el navegador instalado por Playwright. Puedes indicar `CHROMIUM_PATH`. Los resultados se guardan en `test-results/`.

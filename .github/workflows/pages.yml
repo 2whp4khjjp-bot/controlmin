@@ -25,6 +25,9 @@ jobs:
           node --check dist/presentation.js
           node --check dist/report-image.js
           node --check dist/mobile-report.js
+          node --check dist/formations.js
+          node --check dist/event-report.js
+          node --check dist/time-input.js
           node --check dist/sw.js
           npm test
       - uses: actions/setup-python@v5
@@ -53,6 +56,7 @@ jobs:
               raise SystemExit('No se pudo iniciar el servidor de prueba')
           PY
           python tests/browser_smoke.py
+          python tests/browser_tactics.py
       - uses: actions/upload-artifact@v4
         if: always()
         with:

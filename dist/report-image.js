@@ -1,8 +1,9 @@
+import{activityRows}from'./event-report.js';
 // A single tall, high-resolution report for opening and sharing on a phone.
 import {detailLabel,fixture,reportName,fileName} from './presentation.js';
 export async function reportImage({match,teamName,rows,duration,demo=false}){
- const canvas=document.createElement('canvas'),w=1080,pad=52,header=match?350:235,rowHeight=match?134:112;
- canvas.width=w;canvas.height=header+rows.length*rowHeight+145;const c=canvas.getContext('2d');
+ const activities=match?activityRows(match):[];const canvas=document.createElement('canvas'),w=1080,pad=52,header=match?350:235,rowHeight=match?134:112;
+ canvas.width=w;canvas.height=header+rows.length*rowHeight+145+activities.length*250;const c=canvas.getContext('2d');
  if(!c)throw Error('Tu navegador no permite generar la imagen. Puedes usar el PDF vertical.');
  const box=(x,y,width,height,color,r=12)=>{c.fillStyle=color;c.beginPath();c.roundRect(x,y,width,height,r);c.fill();};
  const text=(s,x,y,size=26,color='#23392e',bold=false,max=w-2*pad)=>{c.fillStyle=color;let n=size;do{c.font=`${bold?'600':'400'} ${n}px system-ui, sans-serif`;if(c.measureText(s).width<=max||n<=15)break;n--;}while(true);while(c.measureText(s).width>max&&s.length>1)s=s.slice(0,-2)+'…';c.fillText(s,x,y);};
@@ -36,6 +37,7 @@ export async function reportImage({match,teamName,rows,duration,demo=false}){
  text(match?'Tramos jugados en verde. Descanso excluido.':'Minutos calculados con los segundos reales.',pad,fy+35,21,'#688073');
  text(match?'Partes y total redondeados de forma independiente.':'El orden coincide con el panel y su filtro de búsqueda.',pad,fy+70,20,'#688073');
  text('rkoud.com · '+(demo?'Datos ficticios de demostración':match&&!match.finished?'Informe provisional':'TimeControl'),pad,fy+111,20,'#087f56',true);
+ activities.forEach((e,i)=>{const y=fy+155+i*250;box(pad,y,w-2*pad,230,'#fff');text(e.title,pad+22,y+38,27,'#23392e',true,920);text(e.time,pad+22,y+80,23,'#087f56',false,920);const chunks=e.text.match(/.{1,75}(?:\s|$)|.{1,75}/g)||[];chunks.slice(0,3).forEach((line,j)=>text(line.trim(),pad+22,y+124+j*34,22,'#687d70',false,920));});
  const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/png'));
  if(!blob)throw Error('No se pudo generar la imagen. Prueba con PDF.');
  return{blob,name:match?fileName(match,teamName)+'.png':'TimeControl-total-de-minutos.png',title:match?reportName(match,teamName):'Total de minutos'};

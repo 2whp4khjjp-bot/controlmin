@@ -1,3 +1,4 @@
+import{activityRows}from'./event-report.js';
 import {detailLabel,fixture,reportName,fileName} from './presentation.js';
 const W=1080,H=1920,P=66;
 const mint='#9af2bf',navy='#202c3a',ink='#202b3a',muted='#71808b',paper='#f7f9fb';
@@ -9,7 +10,7 @@ function pageHeader(c,section,index,total){rect(c,0,0,W,H,paper);rect(c,0,0,W,10
 function footer(c,label,demo){text(c,label,P,H-104,29,muted,false);text(c,'TimeControl · por rkoud'+(demo?' · Datos ficticios':''),P,H-54,28,'#138257');}
 function track(c,m,row,i,x,y,width){const p=m.periods[i];text(c,(i+1)+'.ª parte',x,y,29,muted,false,width);rect(c,x,y+17,width,38,'#e4ece7',9);for(const v of row.intervals.filter(v=>v.period===i))rect(c,x+(v.start-p.start)/(p.end-p.start)*width,y+17,(v.end-v.start)/(p.end-p.start)*width,38,'#168e62',8);const s=Math.round(row.parts[i]/60)+' min';c.font='700 29px system-ui,sans-serif';const tw=c.measureText(s).width;rect(c,x+(width-tw)/2-10,y+20,tw+20,32,'#ffffffed',5);text(c,s,x+(width-tw)/2,y+46,29,'#205b40',true,width);}
 export function mobileReportPages({match:m,teamName,rows,duration,demo=false}){
- const groupSize=m?5:6,total=2+Math.max(1,Math.ceil(rows.length/groupSize)),pages=[];
+ const activities=m?activityRows(m):[],groupSize=m?5:6,total=2+Math.max(1,Math.ceil(rows.length/groupSize))+Math.ceil(activities.length/3),pages=[];
  let {cv,c}=surface();rect(c,0,0,W,H,navy);
  // Our own digital identity as a quiet watermark, inspired by the reference's cover hierarchy.
  c.save();c.globalAlpha=.045;text(c,'01:',5,1210,760,mint,true,1070);c.restore();
@@ -30,6 +31,7 @@ export function mobileReportPages({match:m,teamName,rows,duration,demo=false}){
   if(!rows.length)text(c,'No hay jugadores en este filtro.',P,410,38,muted);
   footer(c,m?'Minutos por parte y total redondeados al más cercano.':'Todos los equipos · Según el filtro seleccionado.',demo);pages.push(cv);
  }
+ for(let start=0;start<activities.length;start+=3){({cv,c}=surface());pageHeader(c,'Formaciones y eventos',pages.length+1,total);text(c,'Así cambió el equipo',P,196,54,ink,true);text(c,'Tiempo de cámara y minuto de juego',P,264,31,muted);activities.slice(start,start+3).forEach((event,i)=>{const y=335+i*465;rect(c,P,y,W-P*2,435,'#fff',19);lines(c,event.title,P+28,y+60,39,ink,W-2*P-56,51,2);text(c,event.time,P+28,y+154,29,'#138257',true,W-2*P-56);lines(c,event.text,P+28,y+218,31,muted,W-2*P-56,48,4);});footer(c,'Los cambios tácticos no alteran los minutos jugados.',demo);pages.push(cv);}
  return{pages,title:m?reportName(m,teamName):'TimeControl - Total de minutos',base:m?fileName(m,teamName):'TimeControl-total-de-minutos'};
 }
 const enc=new TextEncoder();

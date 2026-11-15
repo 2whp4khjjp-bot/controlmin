@@ -20,3 +20,8 @@
 17. PDF A4 vertical para imprimir e imagen PNG vertical de una sola pieza para móvil.
 
 18. Exportación móvil con proporción exacta 9:16 por página: portada oscura, resumen y contenido paginado legible, inspirado en el diseño de referencia del usuario. PDF directo y páginas PNG en ZIP; no incluye datos del documento privado de referencia.
+
+19. Formaciones para fútbol 7 y 11 (el portero se incluye en el campo y se excluye de las cifras que se introducen). Se puede escribir el sistema con el portero: 1-2-3-1 se normaliza a 2-3-1.
+20. Las posiciones se intercambian pulsando dos puestos. Los cambios tácticos tienen tiempo y no alteran minutos. Las sustituciones heredan la posición del jugador saliente.
+21. Petición del árbitro es un cambio temporal con sustituto, no una expulsión permanente. El regreso requiere registrar otro cambio.
+22. Minutos y segundos son campos separados con dos puntos fijos; el cursor avanza tras dos cifras. El modo 100+ permite tiempos de cámara de tres o cuatro cifras.

@@ -1,3 +1,4 @@
+import{normalizeFormation,defaultFormation,fitPositions,validatePositions}from'./formations.js';
 import {validateDetails} from './presentation.js';
 // Pure match engine. Seconds and immutable events are the source of truth.
 export const uid=()=>globalThis.crypto.randomUUID();
@@ -25,7 +26,7 @@ export function validateMatch(m){
 export function replay(m){
  validateMatch(m);
  const roster=new Set(m.roster.map(p=>p.id)), blocked=new Set(), intervals=[];
- let field=new Set(m.starters);const states=[];
+ let field=new Set(m.starters),formation=m.initialFormation===undefined?defaultFormation(m.format):normalizeFormation(m.format,m.initialFormation),positions=m.initialPositions===undefined?fitPositions([],m.starters,m.format):structuredClone(m.initialPositions);validatePositions(positions,field,m.format);const states=[];
  const events=[...m.events].sort((a,b)=>a.period-b.period||a.time-b.time||(a.order??0)-(b.order??0)||a.id.localeCompare(b.id));
  if(new Set(events.map(e=>e.id)).size!==events.length)throw Error('Hay eventos duplicados.');
  for(const e of events){if(!Number.isInteger(e.period)||!m.periods[e.period])throw Error('Parte de un evento no válida.');}
@@ -36,18 +37,22 @@ export function replay(m){
    const prefix=`Evento ${clock(e.time)}: `;
    const fail=s=>{throw Error(prefix+s);};
    if(!Number.isInteger(e.time)||e.time<p.start||e.time>p.end)fail('el tiempo está fuera de la parte.');
-   if(!['sub','red','injury'].includes(e.type))fail('tipo desconocido.');
+   if(!['sub','red','injury','formation','position'].includes(e.type))fail('tipo desconocido.');
    if(e.halftime&&(pi!==1||e.time!==p.start))fail('el cambio de descanso debe estar al inicio de la segunda parte.');
+   if(e.reason!==undefined&&(e.type!=='sub'||e.reason!=='referee'))fail('motivo de cambio no válido.');
+   if(e.type==='formation'){formation=normalizeFormation(m.format,e.formation);validatePositions(e.positions,field,m.format);positions=structuredClone(e.positions);continue;}
+   if(e.type==='position'){const pairs=e.swaps||[e.swap];if(!Array.isArray(pairs)||!pairs.length)fail('prepara al menos un intercambio.');for(const pair of pairs){if(!Array.isArray(pair)||pair.length!==2||pair[0]===pair[1]||pair.some(id=>!field.has(id)))fail('selecciona dos jugadores distintos que estén en el campo.');const a=positions.indexOf(pair[0]),b=positions.indexOf(pair[1]);[positions[a],positions[b]]=[positions[b],positions[a]];}continue;}
    if(!Array.isArray(e.out)||!Array.isArray(e.in)||!e.out.length)fail('selecciona quién sale.');
    const all=[...e.out,...e.in];if(new Set(all).size!==all.length||all.some(id=>!roster.has(id)))fail('selección de jugadores no válida.');
    if(e.type==='sub'&&e.out.length!==e.in.length)fail('debe entrar el mismo número de jugadores que sale.');
    if(e.type!=='sub'&&(e.out.length!==1||e.in.length))fail('la salida sin cambio es de un jugador.');
    for(const id of e.out)if(!field.has(id))fail(`${m.roster.find(p=>p.id===id).name} no estaba en el campo.`);
    for(const id of e.in){if(field.has(id))fail('un jugador que entra ya estaba en el campo.');if(blocked.has(id))fail('un jugador expulsado o lesionado sin cambio no puede regresar.');}
+   const vacated=e.out.map(id=>positions.indexOf(id));for(const slot of vacated)positions[slot]=null;
    for(const id of e.out){close(id,e.time);if(e.type!=='sub')blocked.add(id);}
-   for(const id of e.in){field.add(id);opened.set(id,e.time);}
+   for(let i=0;i<e.in.length;i++){const id=e.in[i];field.add(id);opened.set(id,e.time);positions[vacated[i]]=id;}
   }
-  states.push({field:[...field],blocked:[...blocked]});
+  states.push({field:[...field],blocked:[...blocked],formation,positions:[...positions]});
   for(const [id,start]of opened)if(p.end>start)intervals.push({id,period:pi,start,end:p.end});
  }
  const duration=m.periods.reduce((s,p)=>s+p.end-p.start,0);
