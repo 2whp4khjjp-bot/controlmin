@@ -7,6 +7,10 @@ with sync_playwright() as p:
  b=p.chromium.launch(headless=True,executable_path=os.environ.get('CHROMIUM_PATH') or shutil.which('chromium') or p.chromium.executable_path,args=['--no-sandbox'])
  page=b.new_page(viewport={'width':1440,'height':1050});errors=[];page.on('pageerror',lambda e:errors.append(str(e)));page.set_default_timeout(12000)
  page.goto(URL);page.get_by_role('button',name='Explorar con datos ficticios').click()
+ # Las maniobras se prueban sobre el partido ficticio sin sus cambios futuros,
+ # que de otro modo impedirían guardar una salida antes de programar el regreso.
+ page.evaluate("const db=JSON.parse(localStorage.getItem('controlmin.v1'));db.matches[0].events=[];localStorage.setItem('controlmin.v1',JSON.stringify(db))")
+ page.reload();page.get_by_role('button',name='Continuar',exact=True).click()
  data=lambda:page.evaluate("JSON.parse(localStorage.getItem('controlmin.v1'))")
  m=data()['matches'][0];ids=m['starters'];bench={r['name']:r['id'] for r in m['roster']}
  def time(value):
@@ -48,7 +52,9 @@ with sync_playwright() as p:
  time('09:00');expect(page.locator('.formation-caption')).to_contain_text('1-3-2-1')
  page.screenshot(path=str(OUT/'formacion-escritorio.png'),full_page=True)
  saved=data();page.reload();page.get_by_role('button',name='Continuar',exact=True).click();assert data()==saved
+ page.locator('[data-clock="event-time"] .clock-long').click()
  page.locator('[data-clock="event-time"] .clock-min').fill('120');page.locator('[data-clock="event-time"] .clock-sec').fill('00')
+ expect(page.locator('#event-time')).to_have_value('120:00')
  expect(page.locator('.clock-colon').first).to_have_text(':');time('09:00')
  page.get_by_role('button',name='Finalizar partido',exact=True).click();page.locator('#confirm-action').click()
  expect(page.locator('.tactical-report')).to_contain_text('Formación inicial')
